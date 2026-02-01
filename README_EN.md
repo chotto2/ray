@@ -1,4 +1,4 @@
-# Ray - A Program to Identify Divisors by Emitting Rays of Light
+# Ray - A Program to Identify Divisors by Emitting Rays of Light  
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/chotto2/ray)
 
