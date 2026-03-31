@@ -4,7 +4,7 @@
 
 ## Overview
 
-This program identifies divisors of integers from 0 to 128 using a new algorithm (Ray Emission Method) and displays them with asterisks (*).  
+This program identifies divisors of integers from 0 to 1000000 using a new algorithm (Ray Emission Method) and displays them with asterisks (*).  
 It is a derivative program originating from the previously published [dstar-dev](https://github.com/chotto2/dstar-dev).  
 The pattern of asterisks plotted by this program (hereafter referred to as ray) matches the pattern generated using the Sieve of Eratosthenes.  
 Without using the Sieve of Eratosthenes, it utilizes the property stated in the dstar-dev README: "No divisors exist in the VOID region."  
@@ -12,18 +12,29 @@ In this sense, it can be considered an alternative algorithm to the Sieve of Era
 The algorithm itself is simple: imagine rays of light being emitted simultaneously from origin 0 with slopes of 1/n (n=1,2,3,...).  
 Divisors are identified one after another, assuming they can only exist on each of these emitted light rays.  
 While the algorithm is simple, it features low memory consumption and can handle large integers.  
-The resulting list is placed in results/resultr.txt, so please take a look.  
+Due to its large file size, the result list is not included in the repository.  
+Please download `resultr.txt` from **[Releases](https://github.com/chotto2/ray/releases)** and take a look.  
 However, the appearance is the same as dstar-dev.
 
 ## Features
 
 - 🐳 **Docker Support** - Reproducible build environment
-- 📊 **Divisors up to 128** - Suitable size for educational and research purposes
+- 📊 **Divisors up to 1000000** - Suitable size for educational and research purposes
 
 ## Requirements
 
 - Docker Desktop
 - Git
+
+## Result File
+
+Due to its large file size, the result file (`resultr.txt`) is not included in the repository.  
+Please download it from the **[Releases](https://github.com/chotto2/ray/releases)** page on GitHub.
+
+```bash
+# Using gh CLI
+gh release download --pattern "resultr.txt"
+```
 
 ## Build and Run
 
@@ -42,9 +53,9 @@ docker run -it ray /app/build/ray
 ## Performance
 
 ```text
-real    0m0.250s
-user    0m0.009s
-sys     0m0.015s
+real    2m47.464s
+user    0m0.098s
+sys     0m0.445s
 ```
 
 ※Codespace: 2-Core  
@@ -56,7 +67,7 @@ The output result of `ray` is shown below.
 
 ```text
       n:   d(n):divisor2(n, 128)
-      0:    128:******************************** ...
+      0:1000000:******************************** ...
       1:      1:*
       2:      2:**
       3:      2:* *
@@ -98,7 +109,7 @@ Processing 1) Plot divisors of n=0
 
 ```text
       n:   d(n):divisor2(n, 128)
-      0:    128:********************************...
+      0:1000000:********************************...
       1:      0:
       2:      0:
       3:      0:
@@ -108,81 +119,81 @@ Processing 1) Plot divisors of n=0
 ...
 ```
 
-Processing 2) Plot positions where divisor2()=1/n
+Processing 2) Plot positions where the slope is 1/1
 
 ```text
       n:   d(n):divisor2(n, 128)
-      0:    128:********************************...
+      0:1000000:********************************...
       1:      1:*
-      2:      1:*
-      3:      1:*
-      4:      1:*
-      5:      1:*
-      6:      1:*
+      2:      1: *
+      3:      1:  *
+      4:      1:   *
+      5:      1:    *
+      6:      1:     *
 ...
 ```
 
-Processing 3) Plot positions where divisor2()=2/n
+Processing 3) Plot positions where the slope is 1/2
 
 ```text
       n:   d(n):divisor2(n, 128)
-      0:    128:********************************...
+      0:1000000:********************************...
       1:      1:*
       2:      2:**
-      3:      1:*
-      4:      2:**
-      5:      1:*
-      6:      2:**
+      3:      1:  *
+      4:      2: * *
+      5:      1:    *
+      6:      2:  *  *
 ...
 ```
 
-Processing 4) Plot positions where divisor2()=3/n
+Processing 4) Plot positions where the slope is 1/3
 
 ```text
       n:   d(n):divisor2(n, 128)
-      0:    128:********************************...
+      0:1000000:********************************...
       1:      1:*
       2:      2:**
       3:      2:* *
-      4:      2:**
-      5:      1:*
-      6:      3:***
+      4:      2: * *
+      5:      1:    *
+      6:      3: **  *
 ...
 ```
 
-Processing 5) Plot positions where divisor2()=4/n
+Processing 5) Plot positions where the slope is 1/4
 
 ```text
       n:   d(n):divisor2(n, 128)
-      0:    128:********************************...
+      0:1000000:********************************...
       1:      1:*
       2:      2:**
       3:      2:* *
       4:      3:** *
-      5:      1:*
-      6:      3:***
+      5:      1:    *
+      6:      3: **  *
 ...
 ```
 
-Processing 6) Plot positions where divisor2()=5/n
+Processing 6) Plot positions where the slope is 1/5
 
 ```text
       n:   d(n):divisor2(n, 128)
-      0:    128:********************************...
+      0:1000000:********************************...
       1:      1:*
       2:      2:**
       3:      2:* *
       4:      3:** *
       5:      2:*   *
-      6:      3:***
+      6:      3: **  *
 ...
 ```
 
-Processing 7) Plot positions where divisor2()=6/n
+Processing 7) Plot positions where the slope is 1/6
 
 ```text
       n:   d(n):divisor2(n, 128)
-      0:    128:********************************...
+      0:1000000:********************************...
       1:      1:*
       2:      2:**
       3:      2:* *
@@ -202,11 +213,11 @@ Processing 8) By repeating the above, divisors of all integers can be obtained.
 - **Language**: C
 - **Library**: GMP (GNU Multiple Precision Arithmetic Library)
 - **Build System**: CMake
-- **Divisor Range**: 0..128
+- **Divisor Range**: 0..1000000
 
 ## Important Notice
 
-⚠️ **Important**: This version is an implementation for educational and research purposes. Since it handles divisors up to integer 128, it does not affect modern cryptographic systems (such as RSA-4096).
+⚠️ **Important**: This version is an implementation for educational and research purposes. Since it handles divisors up to integer 1000000, it does not affect modern cryptographic systems (such as RSA-4096).
 
 ## Future Plans
 
