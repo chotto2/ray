@@ -41,10 +41,12 @@ typedef struct {
 } DIVS, *pDIVS;
 DIVS divs[X_MAX+1] = {0};
 
+int benchmark_mode = 0;
+
 /**
  * @brief Main entry point
  */
-int32_t main()
+int32_t main(int argc, char *argv[])
 {
 	uint32_t n;
 	uint32_t x;
@@ -54,6 +56,14 @@ int32_t main()
 	uint32_t count;
 	uint32_t pre;
 
+	/*--- check argv ---*/
+	for (int i = 1; i < argc; i++) {
+    	if (strcmp(argv[i], "--benchmark") == 0) {
+        	benchmark_mode = 1;
+ 	   }
+	}
+
+	/*--- other ---*/
 	for (n = 1; n <= A_MAX; n++) {			// y = x/n
 		for (x = n, y = 1; x <= X_MAX; x += n) {
 			divs[x].div[divs[x].cnt++] = y++;
@@ -61,30 +71,32 @@ int32_t main()
 	}
 
 	/*--- for printing ---*/
-	printf("      n:   d(n):divisors2(n, %d)\n", DSP_MAX);
-	printf("%7d:%7d:", 0, Y_MAX);
-	for (y = 1; y <= DSP_MAX; y++) {
-		printf("*");
-	}
-	printf("...\n");
-
-	for (x = 1; x <= X_MAX; x++) {
-		printf("%7d:%7d:", x, divs[x].cnt);
-		pre = 0;
-		for (count = divs[x].cnt; count > 0; count--) {
-			ofs = count - 1;
-			if (ofs >= D_MAX) continue;
-			y = divs[x].div[ofs];
-			if (y > DSP_MAX) continue;
-			if (pre) {
-				for (int i = 0; i < (y-pre-1); i++) {
-					printf(" ");
-				}
-			}
+	if (!benchmark_mode) {
+		printf("      n:   d(n):divisors2(n, %d)\n", DSP_MAX);
+		printf("%7d:%7d:", 0, Y_MAX);
+		for (y = 1; y <= DSP_MAX; y++) {
 			printf("*");
-			pre = y;
 		}
-		printf("\n");
+		printf("...\n");
+
+		for (x = 1; x <= X_MAX; x++) {
+			printf("%7d:%7d:", x, divs[x].cnt);
+			pre = 0;
+			for (count = divs[x].cnt; count > 0; count--) {
+				ofs = count - 1;
+				if (ofs >= D_MAX) continue;
+				y = divs[x].div[ofs];
+				if (y > DSP_MAX) continue;
+				if (pre) {
+					for (int i = 0; i < (y-pre-1); i++) {
+						printf(" ");
+					}
+				}
+				printf("*");
+				pre = y;
+			}
+			printf("\n");
+		}
 	}
 
 	return ret;
