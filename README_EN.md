@@ -48,18 +48,21 @@ docker build -t ray .
 
 # Run (list output)
 docker run -it ray /app/build/ray
+
+# Run（No list output + performance measurement）
+docker run --rm ray bash -c "time /app/build/ray --benchmark"
 ```
 
 ## Performance
 
 ```text
-real    2m47.464s
-user    0m0.098s
-sys     0m0.445s
+real    0m1.066s
+user    0m0.320s
+sys     0m0.586s
 ```
 
 ※Codespace: 2-Core  
-※No output redirection
+※No output when the '--benchmark' argument is specified
 
 ## Output Example
 

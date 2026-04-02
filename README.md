@@ -47,20 +47,23 @@ cd ray
 # Dockerイメージのビルド
 docker build -t ray .
 
-# 実行（リスト出力）
+# 実行（リスト出力あり）
 docker run -it ray /app/build/ray
+
+# 実行（リスト出力なし＋パフォーマンス測定）
+docker run --rm ray bash -c "time /app/build/ray --benchmark"
 ```
 
 ## パフォーマンス
 
 ```text
-real    2m47.464s
-user    0m0.098s
-sys     0m0.445s
+real    0m1.066s
+user    0m0.320s
+sys     0m0.586s
 ```
 
 ※Codespace:2-Core  
-※出力のリダイレクトなし
+※引数'--benchmark'指定で出力なし
 
 ## 出力例
 
