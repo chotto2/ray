@@ -58,9 +58,9 @@ int32_t main(int argc, char *argv[])
 
 	/*--- check argv ---*/
 	for (int i = 1; i < argc; i++) {
-    	if (strcmp(argv[i], "--benchmark") == 0) {
-        	benchmark_mode = 1;
- 	   }
+    		if (strcmp(argv[i], "--benchmark") == 0) {
+        		benchmark_mode = 1;
+ 		}
 	}
 
 	/*--- other ---*/

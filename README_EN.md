@@ -56,13 +56,14 @@ docker run --rm ray bash -c "time /app/build/ray --benchmark"
 ## Performance
 
 ```text
-real    0m1.066s
-user    0m0.320s
-sys     0m0.586s
+real    0m0.7616s
+user    0m0.2643s
+sys     0m0.4847s
 ```
 
 ※Codespace: 2-Core  
-※No output when the '--benchmark' argument is specified
+※No output when the '--benchmark' argument is specified  
+※Average of 10 measurements
 
 ## Output Example
 
