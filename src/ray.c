@@ -8,6 +8,12 @@
  * Multiple rays are emitted simultaneously from the origin.
  * Divisors exist only on the ray lines - no divisors in VOID regions.
  *
+ * @note v1.2.0 (2026-04-04): Up to 2,000,000
+ *       1. Extended the upper limit of integers from 1,000,000 to 2,000,000
+ *       2. Expanded the memory that holds divisors
+ *          - Note: d(1441440)=288 is the maximum within the range 0–2,000,000, so the array size is set to 296. (approx. 2.4GB)
+ *          - Note: Change to dynamic memory(calloc)
+ *
  * @note v1.1.0 (2026-03-31): Up to 1,000,000
  *       1. Extended the upper limit of integers from 128 to 1,000,000
  *       2. Removed GMP bit operations
@@ -28,9 +34,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 
-#define D_MAX (256)
-#define X_MAX (1000000)	
+#define D_MAX (296)
+#define X_MAX (2000000)	
 #define Y_MAX (X_MAX)
 #define A_MAX (X_MAX)
 #define DSP_MAX (128)
@@ -39,7 +46,7 @@ typedef struct {
 	uint32_t div[D_MAX];
 	uint32_t cnt;
 } DIVS, *pDIVS;
-DIVS divs[X_MAX+1] = {0};
+pDIVS divs;
 
 int benchmark_mode = 0;
 
@@ -63,7 +70,14 @@ int32_t main(int argc, char *argv[])
  		}
 	}
 
-	/*--- other ---*/
+	/*--- divs[N_MAX+1] ---*/
+	divs = calloc(X_MAX+1, sizeof(DIVS));
+	if (divs == NULL) {
+		printf("ERR: NULL = calloc(%d, %d)\n", X_MAX+1, sizeof(DIVS));
+		return -1;
+	}
+
+	/*--- ray process ---*/
 	for (n = 1; n <= A_MAX; n++) {			// y = x/n
 		for (x = n, y = 1; x <= X_MAX; x += n) {
 			divs[x].div[divs[x].cnt++] = y++;
@@ -98,6 +112,8 @@ int32_t main(int argc, char *argv[])
 			printf("\n");
 		}
 	}
+
+	free(divs);
 
 	return ret;
 }
