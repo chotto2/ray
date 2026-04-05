@@ -8,11 +8,6 @@
  * Multiple rays are emitted simultaneously from the origin.
  * Divisors exist only on the ray lines - no divisors in VOID regions.
  *
- * @note v1.3.0 (2026-04-06): Up to 3,000,000
- *       1. Extended the upper limit of integers from 2,000,000 to 3,000,000
- *       2. Expanded the memory that holds divisors
- *          - Note: d(2948400)=300 is the maximum within the range 0–3,000,000, so the array size is set to 304. (approx. 3.6GB)
- *
  * @note v1.2.0 (2026-04-04): Up to 2,000,000
  *       1. Extended the upper limit of integers from 1,000,000 to 2,000,000
  *       2. Expanded the memory that holds divisors
@@ -41,8 +36,8 @@
 #include <stdint.h>
 #include <string.h>
 
-#define D_MAX (304)
-#define X_MAX (3000000)	
+#define D_MAX (296)
+#define X_MAX (2000000)	
 #define Y_MAX (X_MAX)
 #define A_MAX (X_MAX)
 #define DSP_MAX (128)
