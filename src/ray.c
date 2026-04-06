@@ -36,8 +36,8 @@
 #include <stdint.h>
 #include <string.h>
 
-#define D_MAX (296)
-#define X_MAX (2000000)	
+#define D_MAX (344)
+#define X_MAX (3000000)	
 #define Y_MAX (X_MAX)
 #define A_MAX (X_MAX)
 #define DSP_MAX (128)
@@ -80,7 +80,12 @@ int32_t main(int argc, char *argv[])
 	/*--- ray process ---*/
 	for (n = 1; n <= A_MAX; n++) {			// y = x/n
 		for (x = n, y = 1; x <= X_MAX; x += n) {
-			divs[x].div[divs[x].cnt++] = y++;
+			if (divs[x].cnt < D_MAX) {
+				divs[x].div[divs[x].cnt++] = y++;
+			}
+			else {
+				divs[x].cnt++;
+			}
 		}
 	}
 
