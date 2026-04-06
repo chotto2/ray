@@ -56,9 +56,9 @@ docker run --rm ray bash -c "time /app/build/ray --benchmark"
 ## Performance
 
 ```text
-real    0m1.9844s
-user    0m0.7726s
-sys     0m1.1428s
+real    0m3.4719s
+user    0m1.3180s
+sys     0m2.0323s
 ```
 
 ※Codespace: 2-Core  

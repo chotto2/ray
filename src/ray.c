@@ -8,6 +8,11 @@
  * Multiple rays are emitted simultaneously from the origin.
  * Divisors exist only on the ray lines - no divisors in VOID regions.
  *
+ * @note v1.3.0 (2026-04-07): Up to 3,000,000
+ *       1. Extended the upper limit of integers from 2,000,000 to 3,000,000
+ *       2. Expanded the memory that holds divisors
+ *          - Note: d(2882880)=336 is the maximum within the range 0–3,000,000, so the array size is set to 344. (approx. 4.2GB)
+ *
  * @note v1.2.0 (2026-04-04): Up to 2,000,000
  *       1. Extended the upper limit of integers from 1,000,000 to 2,000,000
  *       2. Expanded the memory that holds divisors
