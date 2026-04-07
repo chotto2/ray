@@ -4,7 +4,7 @@
 
 ## Overview
 
-This program identifies divisors of integers from 0 to 2000000 using a new algorithm (Ray Emission Method) and displays them with asterisks (*).  
+This program identifies divisors of integers from 0 to 3000000 using a new algorithm (Ray Emission Method) and displays them with asterisks (*).  
 It is a derivative program originating from the previously published [dstar-dev](https://github.com/chotto2/dstar-dev).  
 The pattern of asterisks plotted by this program (hereafter referred to as ray) matches the pattern generated using the Sieve of Eratosthenes.  
 Without using the Sieve of Eratosthenes, it utilizes the property stated in the dstar-dev README: "No divisors exist in the VOID region."  
@@ -19,7 +19,7 @@ However, the appearance is the same as dstar-dev.
 ## Features
 
 - 🐳 **Docker Support** - Reproducible build environment
-- 📊 **Divisors up to 2000000** - Suitable size for educational and research purposes
+- 📊 **Divisors up to 3000000** - Suitable size for educational and research purposes
 
 ## Requirements
 
@@ -71,7 +71,7 @@ The output result of `ray` is shown below.
 
 ```text
       n:   d(n):divisor2(n, 128)
-      0:2000000:******************************** ...
+      0:3000000:******************************** ...
       1:      1:*
       2:      2:**
       3:      2:* *
@@ -113,7 +113,7 @@ Processing 1) Plot divisors of n=0
 
 ```text
       n:   d(n):divisor2(n, 128)
-      0:2000000:********************************...
+      0:3000000:********************************...
       1:      0:
       2:      0:
       3:      0:
@@ -127,7 +127,7 @@ Processing 2) Plot positions where the slope is 1/1
 
 ```text
       n:   d(n):divisor2(n, 128)
-      0:2000000:********************************...
+      0:3000000:********************************...
       1:      1:*
       2:      1: *
       3:      1:  *
@@ -141,7 +141,7 @@ Processing 3) Plot positions where the slope is 1/2
 
 ```text
       n:   d(n):divisor2(n, 128)
-      0:2000000:********************************...
+      0:3000000:********************************...
       1:      1:*
       2:      2:**
       3:      1:  *
@@ -155,7 +155,7 @@ Processing 4) Plot positions where the slope is 1/3
 
 ```text
       n:   d(n):divisor2(n, 128)
-      0:2000000:********************************...
+      0:3000000:********************************...
       1:      1:*
       2:      2:**
       3:      2:* *
@@ -169,7 +169,7 @@ Processing 5) Plot positions where the slope is 1/4
 
 ```text
       n:   d(n):divisor2(n, 128)
-      0:2000000:********************************...
+      0:3000000:********************************...
       1:      1:*
       2:      2:**
       3:      2:* *
@@ -183,7 +183,7 @@ Processing 6) Plot positions where the slope is 1/5
 
 ```text
       n:   d(n):divisor2(n, 128)
-      0:2000000:********************************...
+      0:3000000:********************************...
       1:      1:*
       2:      2:**
       3:      2:* *
@@ -197,7 +197,7 @@ Processing 7) Plot positions where the slope is 1/6
 
 ```text
       n:   d(n):divisor2(n, 128)
-      0:2000000:********************************...
+      0:3000000:********************************...
       1:      1:*
       2:      2:**
       3:      2:* *
@@ -217,11 +217,11 @@ Processing 8) By repeating the above, divisors of all integers can be obtained.
 - **Language**: C
 - **Library**: GMP (GNU Multiple Precision Arithmetic Library)
 - **Build System**: CMake
-- **Divisor Range**: 0..2000000
+- **Divisor Range**: 0..3000000
 
 ## Cautions
 
-⚠️ **Important**: This version is an implementation for educational and research purposes. Since it handles divisors up to integer 2000000, it does not affect modern cryptographic systems (such as RSA-4096).
+⚠️ **Important**: This version is an implementation for educational and research purposes. Since it handles divisors up to integer 3000000, it does not affect modern cryptographic systems (such as RSA-4096).
 
 ## Future Plans
 

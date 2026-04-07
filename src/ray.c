@@ -25,7 +25,7 @@
  *       3. Virtualized the existence of all divisors at x=0
  *       4. Improved memory efficiency by storing divisor values in an array
  *          - Note: d(720720)=240 is the maximum within the range 0–1,000,000, so the array size is set to 256. (approx. 1GB)
- *          - Note: Stored in ascending order, with NULL(0) as the terminator
+ *          - Note: Stored in descending order, with NULL(0) as the terminator
  *
  * @note v1.0.0 (2026-01-30): Add ray command
  *       1. Plots the divisors of integers from 0 to 128
