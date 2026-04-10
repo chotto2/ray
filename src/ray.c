@@ -41,14 +41,16 @@
 #include <stdint.h>
 #include <string.h>
 
-#define D_MAX (344)
-#define X_MAX (3000000)	
+#define X_MAX (4000000)	
 #define Y_MAX (X_MAX)
 #define A_MAX (X_MAX)
 #define DSP_MAX (128)
 
+uint32_t *divs_pool;
+
 typedef struct {
-	uint32_t div[D_MAX];
+	uint32_t pool_ofs;
+	uint32_t pool_cnt;
 	uint32_t cnt;
 } DIVS, *pDIVS;
 pDIVS divs;
@@ -75,22 +77,42 @@ int32_t main(int argc, char *argv[])
  		}
 	}
 
-	/*--- divs[N_MAX+1] ---*/
+	/*--- alloc divs ---*/
 	divs = calloc(X_MAX+1, sizeof(DIVS));
 	if (divs == NULL) {
-		printf("ERR: NULL = calloc(%d, %d)\n", X_MAX+1, sizeof(DIVS));
+		printf("ERR: divs(0) = calloc(%d, %ld)\n", X_MAX+1, sizeof(DIVS));
 		return -1;
+	}
+
+	/*--- make pool_cnt ---*/
+	for (n = 1; n <= A_MAX; n++) {			
+		for (x = n, y = 1; x <= X_MAX; x += n) {
+			divs[x].pool_cnt++;
+		}
+	}
+
+	/*--- make pool_ofs ---*/
+	ofs = 0;
+	for (x = 1; x <= X_MAX; x++) {
+		divs[x].pool_ofs = ofs;
+		ofs += divs[x].pool_cnt;
+		ofs++;  // for NULL padding.
+	}
+
+	/*--- alloc pool ---*/
+	divs_pool = calloc(ofs, sizeof(uint32_t));
+	if (divs_pool == NULL) {
+		printf("ERR: divs_pool(0) = calloc(%d, %ld)\n", ofs, sizeof(uint32_t));
+		return -2;
 	}
 
 	/*--- ray process ---*/
 	for (n = 1; n <= A_MAX; n++) {			// y = x/n
 		for (x = n, y = 1; x <= X_MAX; x += n) {
-			if (divs[x].cnt < D_MAX) {
-				divs[x].div[divs[x].cnt++] = y++;
+			if (divs[x].cnt < divs[x].pool_cnt) {
+				divs_pool[divs[x].pool_ofs+divs[x].cnt] = y++;
 			}
-			else {
-				divs[x].cnt++;
-			}
+			divs[x].cnt++;
 		}
 	}
 
@@ -108,8 +130,8 @@ int32_t main(int argc, char *argv[])
 			pre = 0;
 			for (count = divs[x].cnt; count > 0; count--) {
 				ofs = count - 1;
-				if (ofs >= D_MAX) continue;
-				y = divs[x].div[ofs];
+				if (ofs >= divs[x].pool_cnt) continue;
+				y = divs_pool[divs[x].pool_ofs+ofs];
 				if (y > DSP_MAX) continue;
 				if (pre) {
 					for (int i = 0; i < (y-pre-1); i++) {
@@ -123,6 +145,7 @@ int32_t main(int argc, char *argv[])
 		}
 	}
 
+	free(divs_pool);
 	free(divs);
 
 	return ret;
