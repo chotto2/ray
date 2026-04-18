@@ -4,7 +4,7 @@
 
 ## Overview
 
-This program identifies divisors of integers from 0 to 3000000 using a new algorithm (Ray Emission Method) and displays them with asterisks (*).  
+This program identifies divisors of integers from 0 to 10000000 using a new algorithm (Ray Emission Method) and displays them with asterisks (*).  
 It is a derivative program originating from the previously published [dstar-dev](https://github.com/chotto2/dstar-dev).  
 The pattern of asterisks plotted by this program (hereafter referred to as ray) matches the pattern generated using the Sieve of Eratosthenes.  
 Without using the Sieve of Eratosthenes, it utilizes the property stated in the dstar-dev README: "No divisors exist in the VOID region."  
@@ -19,7 +19,7 @@ However, the appearance is the same as dstar-dev.
 ## Features
 
 - 🐳 **Docker Support** - Reproducible build environment
-- 📊 **Divisors up to 3000000** - Suitable size for educational and research purposes
+- 📊 **Divisors up to 10000000** - Suitable size for educational and research purposes
 
 ## Requirements
 
@@ -46,47 +46,66 @@ cd ray
 # Build Docker image
 docker build -t ray .
 
-# Run (list output)
-docker run -it ray /app/build/ray
+# Run (Usage output)
+docker run -it ray ray
+USAGE: ray { {-v | --version} | <x_max> [{-m | --memory}] [{-b | --benchmark}] }
 
-# Run(No list output + performance measurement)
-docker run --rm ray bash -c "time /app/build/ray --benchmark"
+  -v, --version    Show version number
+  x_max            Upper limit for divisor computation (positive integer)
+  -m, --memory     Show memory required for x_max and exit (no computation)
+                   (takes precedence over -b if both are specified)
+  -b, --benchmark  Show elapsed/user/sys time after computation
+
+# Run (version number output)
+docker run -it ray ray -v
+version: 2.0.0
+
+# Run (list output)
+docker run -it ray ray 10000000
+
+# Run (No list output + performance measurement)
+docker run -it ray ray 10000000 -b
+real 3.528s user 3.205s  sys 0.232s
+
+# Run (No list output + no performance measurement + display memory usage)
+docker run -it ray ray 10000000 -m
+total memory = 810901468
 ```
 
 ## Performance
 
 ```text
-real    0m3.4719s
-user    0m1.3180s
-sys     0m2.0323s
+real    3.578s
+user    3.271s
+sys     0.199s
 ```
 
-※Codespace: 2-Core  
-※No output when the '--benchmark' argument is specified  
-※Average of 10 measurements
+Note: Codespace: 2-Core  
+Note: No output when the '--benchmark' argument is specified  
+Note: Average of 10 measurements
 
 ## Output Example
 
 The output result of `ray` is shown below.
 
 ```text
-      n:   d(n):divisor2(n, 128)
-      0:3000000:******************************** ...
-      1:      1:*
-      2:      2:**
-      3:      2:* *
-      4:      3:** *
-      5:      2:*   *
-      6:      4:***  *
-      7:      2:*     *
-      8:      4:** *   *
-      9:      3:* *     *
-     10:      4:**  *    *
-     11:      2:*         *
-     12:      6:**** *     *
-     13:      2:*           *
-     14:      4:**    *      *
-     15:      4:* * *         *
+       n:    d(n):divisor2(n, 128)
+       0:10000000:******************************** ...
+       1:       1:*
+       2:       2:**
+       3:       2:* *
+       4:       3:** *
+       5:       2:*   *
+       6:       4:***  *
+       7:       2:*     *
+       8:       4:** *   *
+       9:       3:* *     *
+      10:       4:**  *    *
+      11:       2:*         *
+      12:       6:**** *     *
+      13:       2:*           *
+      14:       4:**    *      *
+      15:       4:* * *         *
 ...
 ```
 
@@ -100,110 +119,110 @@ divisor2(n, 128) limits the upper bound of divisors to 128 and displays the resu
 For example, looking at what the output looks like for integer 6, it is as follows:
 
 ```text
-      6:      4:***  * 
+       6:       4:***  * 
 ```
 
 This indicates that integer 6 has 4 divisors, which are {1,2,3,6}. (Positions 4 and 5 are blank)
 
-※Integer 0 is a special case where all non-zero integers are divisors (n × 0 = 0)
+Note: Integer 0 is a special case where all non-zero integers are divisors (n × 0 = 0)
 
 ## Main Processing Sequence
 
 Processing 1) Plot divisors of n=0
 
 ```text
-      n:   d(n):divisor2(n, 128)
-      0:3000000:********************************...
-      1:      0:
-      2:      0:
-      3:      0:
-      4:      0:
-      5:      0:
-      6:      0:
+       n:    d(n):divisor2(n, 128)
+       0:10000000:********************************...
+       1:       0:
+       2:       0:
+       3:       0:
+       4:       0:
+       5:       0:
+       6:       0:
 ...
 ```
 
 Processing 2) Plot positions where the slope is 1/1
 
 ```text
-      n:   d(n):divisor2(n, 128)
-      0:3000000:********************************...
-      1:      1:*
-      2:      1: *
-      3:      1:  *
-      4:      1:   *
-      5:      1:    *
-      6:      1:     *
+       n:    d(n):divisor2(n, 128)
+       0:10000000:********************************...
+       1:       1:*
+       2:       1: *
+       3:       1:  *
+       4:       1:   *
+       5:       1:    *
+       6:       1:     *
 ...
 ```
 
 Processing 3) Plot positions where the slope is 1/2
 
 ```text
-      n:   d(n):divisor2(n, 128)
-      0:3000000:********************************...
-      1:      1:*
-      2:      2:**
-      3:      1:  *
-      4:      2: * *
-      5:      1:    *
-      6:      2:  *  *
+       n:    d(n):divisor2(n, 128)
+       0:10000000:********************************...
+       1:       1:*
+       2:       2:**
+       3:       1:  *
+       4:       2: * *
+       5:       1:    *
+       6:       2:  *  *
 ...
 ```
 
 Processing 4) Plot positions where the slope is 1/3
 
 ```text
-      n:   d(n):divisor2(n, 128)
-      0:3000000:********************************...
-      1:      1:*
-      2:      2:**
-      3:      2:* *
-      4:      2: * *
-      5:      1:    *
-      6:      3: **  *
+       n:    d(n):divisor2(n, 128)
+       0:10000000:********************************...
+       1:       1:*
+       2:       2:**
+       3:       2:* *
+       4:       2: * *
+       5:       1:    *
+       6:       3: **  *
 ...
 ```
 
 Processing 5) Plot positions where the slope is 1/4
 
 ```text
-      n:   d(n):divisor2(n, 128)
-      0:3000000:********************************...
-      1:      1:*
-      2:      2:**
-      3:      2:* *
-      4:      3:** *
-      5:      1:    *
-      6:      3: **  *
+       n:    d(n):divisor2(n, 128)
+       0:10000000:********************************...
+       1:       1:*
+       2:       2:**
+       3:       2:* *
+       4:       3:** *
+       5:       1:    *
+       6:       3: **  *
 ...
 ```
 
 Processing 6) Plot positions where the slope is 1/5
 
 ```text
-      n:   d(n):divisor2(n, 128)
-      0:3000000:********************************...
-      1:      1:*
-      2:      2:**
-      3:      2:* *
-      4:      3:** *
-      5:      2:*   *
-      6:      3: **  *
+       n:    d(n):divisor2(n, 128)
+       0:10000000:********************************...
+       1:       1:*
+       2:       2:**
+       3:       2:* *
+       4:       3:** *
+       5:       2:*   *
+       6:       3: **  *
 ...
 ```
 
 Processing 7) Plot positions where the slope is 1/6
 
 ```text
-      n:   d(n):divisor2(n, 128)
-      0:3000000:********************************...
-      1:      1:*
-      2:      2:**
-      3:      2:* *
-      4:      3:** *
-      5:      2:*   *
-      6:      4:***  *
+       n:    d(n):divisor2(n, 128)
+       0:10000000:********************************...
+       1:       1:*
+       2:       2:**
+       3:       2:* *
+       4:       3:** *
+       5:       2:*   *
+       6:       4:***  *
 ...
 ```
 
@@ -215,13 +234,12 @@ Processing 8) By repeating the above, divisors of all integers can be obtained.
 ## Technical Details
 
 - **Language**: C
-- **Library**: GMP (GNU Multiple Precision Arithmetic Library)
 - **Build System**: CMake
-- **Divisor Range**: 0..3000000
+- **Divisor Range**: 0..10000000
 
 ## Cautions
 
-⚠️ **Important**: This version is an implementation for educational and research purposes. Since it handles divisors up to integer 3000000, it does not affect modern cryptographic systems (such as RSA-4096).
+⚠️ **Important**: This version is an implementation for educational and research purposes. Since it handles divisors up to integer 10000000, it does not affect modern cryptographic systems (such as RSA-4096).
 
 ## Future Plans
 

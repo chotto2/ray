@@ -74,139 +74,6 @@ static int is_digits(const char *s) {
 
 /**
  * @brief Main entry point
- */
-#if 0	// for test.
-int32_t main(int argc, char *argv[])
-{
-	uint32_t n;
-	uint32_t x;
-	uint32_t y;
-	int32_t ret = 0;
-	uint32_t ofs;
-	uint32_t count;
-	uint32_t pre;
-	struct rusage r_start, r_end;
-	struct timeval wall_start, wall_end;
-
-	/*--- check argv ---*/
-	for (int i = 1; i < argc; i++) {
-		if (strcmp(argv[i], "--benchmark") == 0) {
-			benchmark_mode = 1;
-		}
-		else {
-			if (i == 1) {
-				if (is_digits(argv[i])) {
-					x_max = atoll(argv[i]);
-				}
-				else {
-					printf("USAGE: ray [<n_max>] [--benchmark]\n");
-					return ERR_ARGSTYPE;
-				}
-			}
-		}
-	}
-
-	/*--- alloc divs ---*/
-	divs = calloc(X_MAX+1, sizeof(DIVS));
-	if (divs == NULL) {
-		printf("ERR: divs(0) = calloc(%ld, %ld)\n", X_MAX+1, sizeof(DIVS));
-		return ERR_DIVSALOC;
-	}
-
-	/*--- make pool_cnt ---*/
-	for (n = 1; n <= A_MAX; n++) {			
-		for (x = n, y = 1; x <= X_MAX; x += n) {
-			divs[x].pool_cnt++;
-		}
-	}
-
-	/*--- make pool_ofs ---*/
-	ofs = 0;
-	for (x = 1; x <= X_MAX; x++) {
-		divs[x].pool_ofs = ofs;
-		ofs += divs[x].pool_cnt;
-		ofs++;  // for NULL padding.
-	}
-
-	/*--- alloc pool ---*/
-	divs_pool = calloc(ofs, sizeof(uint32_t));
-	if (divs_pool == NULL) {
-		free(divs);
-		divs = NULL;
-		printf("ERR: divs_pool(0) = calloc(%d, %ld)\n", ofs, sizeof(uint32_t));
-		return ERR_POOLALOC;
-	}
-
-	/*--- get start time ---*/
-	if (benchmark_mode) {
-		gettimeofday(&wall_start, NULL);
-		getrusage(RUSAGE_SELF, &r_start);
-	}
-
-	/*--- ray process ---*/
-	for (n = 1; n <= A_MAX; n++) {			// y = x/n
-		for (x = n, y = 1; x <= X_MAX; x += n) {
-			if (divs[x].cnt < divs[x].pool_cnt) {
-				divs_pool[divs[x].pool_ofs+divs[x].cnt] = y++;
-			}
-			divs[x].cnt++;
-		}
-	}
-
-	/*--- get end time ---*/
-	if (benchmark_mode) {
-		gettimeofday(&wall_end, NULL);
-		getrusage(RUSAGE_SELF, &r_end);
-	}
-
-	if (benchmark_mode) {
-		/*--- print benchmark ---*/
-		double wall = (wall_end.tv_sec - wall_start.tv_sec)
-			    + (wall_end.tv_usec - wall_start.tv_usec) / 1e6;
-		double user = (r_end.ru_utime.tv_sec  - r_start.ru_utime.tv_sec)
-			    + (r_end.ru_utime.tv_usec - r_start.ru_utime.tv_usec) / 1e6;
-		double sys  = (r_end.ru_stime.tv_sec  - r_start.ru_stime.tv_sec)
-			    + (r_end.ru_stime.tv_usec - r_start.ru_stime.tv_usec) / 1e6;
-
-		printf("real %.3fs user %.3fs  sys %.3fs\n", wall, user, sys);
-	}
-	else {
-		/*--- print divisor stars ---*/
-		printf("      n:   d(n):divisors2(n, %d)\n", DSP_MAX);
-		printf("%7d:%7ld:", 0, Y_MAX);
-		for (y = 1; y <= DSP_MAX; y++) {
-			printf("*");
-		}
-		printf("...\n");
-
-		for (x = 1; x <= X_MAX; x++) {
-			printf("%7d:%7d:", x, divs[x].cnt);
-			pre = 0;
-			for (count = divs[x].cnt; count > 0; count--) {
-				ofs = count - 1;
-				if (ofs >= divs[x].pool_cnt) continue;
-				y = divs_pool[divs[x].pool_ofs+ofs];
-				if (y > DSP_MAX) continue;
-				if (pre) {
-					for (int i = 0; i < (y-pre-1); i++) {
-						printf(" ");
-					}
-				}
-				printf("*");
-				pre = y;
-			}
-			printf("\n");
-		}
-	}
-
-	free(divs_pool);
-	free(divs);
-
-	return ret;
-}
-#else
-/**
- * @brief Main entry point
  *
  * @return 0 on success, negative error code on failure:
  *        -1: A non-numeric value was specified as the first argument
@@ -222,11 +89,9 @@ int main(int argc, char *argv[])
 	DIVS     *divs;
 	uint32_t *divs_pool;
 	uint32_t pool_num;
-//	uint32_t m;
 	uint32_t n;
 	uint32_t x;
 	uint32_t y;
-//	uint32_t ofs;
 	int ret;
 
 	ret = check_arg(argc, argv);
@@ -480,6 +345,3 @@ static void print_divisor_stars(DIVS *divs, uint32_t *divs_pool)
 		printf("\n");
 	}
 }
-
-#endif
-
