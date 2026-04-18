@@ -2,11 +2,17 @@
  * @file ray.c
  * @brief Ray-based divisor visualization
  * @author N.Arai
- * @date 2026-01-26
+ * @date 2026-04-15
  *
  * Visualizes divisor distribution as rays of light with slopes 1/n (n>0).
  * Multiple rays are emitted simultaneously from the origin.
  * Divisors exist only on the ray lines - no divisors in VOID regions.
+ *
+ * @note v2.0.0 (2026-04-15): Up to 10,000,000
+ *       1. Improvement of memory usage efficiency.(approx. 0.8GB)
+ *       2. Built-in benchmark measurement.
+ *       3. Setting the upper limit of an integer by the first argument.
+ *       4. Stop using uint64_t and change to uint32_t.
  *
  * @note v1.3.0 (2026-04-07): Up to 3,000,000
  *       1. Extended the upper limit of integers from 2,000,000 to 3,000,000
@@ -43,40 +49,33 @@
 #include <sys/resource.h>
 #include <sys/time.h>
 #include <ctype.h>
+#include <errno.h>
+#include "benchmark.h"
+#include "divs.h"
 
-//#define X_MAX (4000000)
-#define X_MAX x_max
-#define Y_MAX (X_MAX)
-#define A_MAX (X_MAX)
-#define DSP_MAX (128)
+uint32_t x_max;
+static int memory_mode = 0;
+static int benchmark_mode = 0;
+static uint64_t total_memory;
 
-#define ERR_ARGSTYPE   (-1)
-#define ERR_DIVSALOC   (-2)
-#define ERR_POOLALOC   (-3)
+static int check_arg(int argc, char *argv[]);
+static DIVS *calloc_divs(void);
+static uint32_t set_pool_info(DIVS *divs);
+static uint32_t *calloc_pool(uint32_t pool_num);
+static void print_divisor_stars(DIVS *divs, uint32_t *divs_pool);
 
-uint32_t *divs_pool;
-
-typedef struct {
-	uint32_t pool_ofs;
-	uint32_t pool_cnt;
-	uint32_t cnt;
-} DIVS, *pDIVS;
-pDIVS divs;
-
-uint64_t x_max = 1000000;
-int benchmark_mode = 0;
-
-int is_digits(const char *s) {
-	if (s == NULL || *s == '\0') return 0;
-	for (; *s; s++) {
-		if (!isdigit((unsigned char)*s)) return 0;
-	}
-	return 1;
+static int is_digits(const char *s) {
+    if (s == NULL || *s == '\0') return 0;
+    for (; *s; s++) {
+        if (!isdigit((unsigned char)*s)) return 0;
+    }
+    return 1;
 }
 
 /**
  * @brief Main entry point
  */
+#if 0	// for test.
 int32_t main(int argc, char *argv[])
 {
 	uint32_t n;
@@ -205,5 +204,282 @@ int32_t main(int argc, char *argv[])
 
 	return ret;
 }
+#else
+/**
+ * @brief Main entry point
+ *
+ * @return 0 on success, negative error code on failure:
+ *        -1: A non-numeric value was specified as the first argument
+ *        -2: No arguments were specified
+ *        -3: An illegal argument was specified
+ *        -4: Exceeded the upper limit of x_max
+ *        -5: Failed to allocate divisor structures
+ *        -6: Failed to allocate divisor pool
+ *        -7: Show version only
+ */
+int main(int argc, char *argv[])
+{
+	DIVS     *divs;
+	uint32_t *divs_pool;
+	uint32_t pool_num;
+//	uint32_t m;
+	uint32_t n;
+	uint32_t x;
+	uint32_t y;
+//	uint32_t ofs;
+	int ret;
 
+	ret = check_arg(argc, argv);
+	if (ret != ERR_OK) {
+		;
+	}
+	else {
+		divs = calloc_divs();
+		if (divs == NULL) {
+			ret = ERR_DIVSALOC;
+		}
+		else {
+			pool_num = set_pool_info(divs);
+
+			divs_pool = calloc_pool(pool_num);
+			if (divs_pool == NULL) {
+				ret = ERR_POOLALOC;
+			}
+			else {
+				if (memory_mode) {
+					printf("total memory = %lu\n", total_memory);
+				}
+				else {
+					get_start_time();
+
+					/*--- ray process ---*/
+					for (n = 1; n <= A_MAX; n++) {			// y = x/n
+						for (x = n, y = 1; x <= X_MAX; x += n) {
+							if (divs[x].cnt < divs[x].pool_cnt) {
+								divs_pool[divs[x].pool_ofs+divs[x].cnt] = y++;
+							}
+							divs[x].cnt++;
+						}
+					}
+
+					get_end_time();
+
+					/*--- print results ---*/
+					if (benchmark_mode) {
+						print_benchmark();
+					}
+					else {
+						print_divisor_stars(divs, divs_pool);
+					}
+				}
+
+				free(divs_pool);
+				ret = ERR_OK;
+			}
+
+			free(divs);
+		}
+	}
+
+	return ret;
+}
+
+/**
+ * @brief Display the usage of the command
+ */
+static void print_usage()
+{
+	printf("USAGE: ray { {-v | --version} | <x_max> [{-m | --memory}] [{-b | --benchmark}] }\n");
+	printf("\n");
+	printf("  -v, --version    Show version number\n");
+	printf("  x_max            Upper limit for divisor computation (positive integer)\n");
+	printf("  -m, --memory     Show memory required for x_max and exit (no computation)\n");
+	printf("                   (takes precedence over -b if both are specified)\n");
+	printf("  -b, --benchmark  Show elapsed/user/sys time after computation\n");
+}
+
+/**
+ * @brief Check the command arguments
+ *
+ * @return 0 on success, negative error code on failure:
+ *        -1: A non-numeric value was specified as the first argument
+ *        -2: No arguments were specified
+ *        -3: A illegal argument was specified
+ *        -4: Exceeded the upper limit of x_max
+ *
+ */
+static int check_arg(int argc, char *argv[])
+{
+	int ret = ERR_OK;
+
+	if (argc < 2) {
+		print_usage();
+		ret = ERR_ARGC;
+	}
+	else {
+		for (int i = 1; i < argc; i++) {
+			if (i == 1) {
+				if ((strcmp(argv[i], "--version") == 0)
+				||  (strcmp(argv[i], "-v") == 0)) {
+					printf("version: %s\n", VERSION);
+					ret = ERR_VERSION;
+					break;
+				}
+				else {
+					if (is_digits(argv[i])) {
+						errno = 0;
+						unsigned long val = strtoul(argv[1], NULL, 10);
+						if (errno == ERANGE || val == 0 || val > X_MAX_LIMIT) {
+    							printf("ERR: x_max out of range\n");
+							print_usage();
+    							ret = ERR_RANGOVER;
+							break;
+						}
+						else {
+							x_max = (uint32_t)val;
+						}
+					}
+					else {
+						print_usage();
+						ret = ERR_ARGSTYPE;
+						break;
+					}
+				}
+			}
+			else {
+				if ((strcmp(argv[i], "--memory") == 0)
+				||  (strcmp(argv[i], "-m") == 0)) {
+					memory_mode = 1;
+				}
+				else {
+					if ((strcmp(argv[i], "--benchmark") == 0)
+					||  (strcmp(argv[i], "-b") == 0)) {
+						benchmark_mode = 1;
+					}
+					else {
+						print_usage();
+						ret = ERR_ILLGPARM;
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	return ret;
+}
+
+/**
+ * @brief Allocate several structures that indirectly point to the list of divisors
+ *
+ * @return Address of the allocated structures, NULL on error
+ *
+ */
+static DIVS *calloc_divs()
+{
+	DIVS *p;
+
+	p = calloc(X_MAX+1, sizeof(DIVS));
+	if (p == NULL) {
+		printf("ERR: divs(0) = calloc(%u, %ld)\n", X_MAX+1, sizeof(DIVS));
+	}
+	total_memory = sizeof(DIVS)*(X_MAX+1);
+
+	return p;
+}
+
+/**
+ * @brief Set the position and number in the pool
+ *
+ * @param[in]  divs Refers to a part of the pool for each integer
+ *
+ * @return  Total number of words in the pool to allocate
+ *
+ */
+static uint32_t set_pool_info(DIVS *divs)
+{
+	uint32_t x;
+	uint32_t y;
+	uint32_t ofs;
+
+	/*--- set pool_cnt ---*/
+	for (y = 1; y <= Y_MAX; y++) {
+		for (x = y; x <= X_MAX; x += y) {
+			divs[x].pool_cnt++;
+		}
+	}
+
+	/*--- set pool_ofs ---*/
+	ofs = 0;
+	for (x = 1; x <= X_MAX; x++) {
+		divs[x].pool_ofs = ofs;
+		ofs += divs[x].pool_cnt;
+		ofs++;	// for NULL padding.
+	}
+
+	return ofs;
+}
+
+/**
+ * @brief Allocate memory area to hold a list of divisors
+ *
+ * @param[in]  num  Number of words in the list of all divisors
+ *                  - Note: including NULL padding
+ *
+ * @return Address of the allocated pool, NULL on error
+ *
+ */
+static uint32_t *calloc_pool(uint32_t num)
+{
+	uint32_t *p;
+
+	p = calloc(num, sizeof(uint32_t));
+	if (p == NULL) {
+		printf("ERR: divs_pool(0) = calloc(%u, %ld)\n", num, sizeof(uint32_t));
+	}
+	total_memory += sizeof(uint32_t)*num;
+
+	return p;
+}
+
+/**
+ * @brief Display the divisors in the table
+ *
+ * @param[in]  divs       Refers to the list of divisors within the pool
+ * @param[in]  divs_pool  A block of NULL-padded divisor lists
+ *
+ */
+static void print_divisor_stars(DIVS *divs, uint32_t *divs_pool)
+{
+	uint32_t x;
+	uint32_t y;
+	uint32_t pre;
+	int width = snprintf(NULL, 0, "%u", X_MAX);
+
+	width = (width < 7)? 7: width;		// for compatibility
+	printf("%*s:%*s:divisors2(n, %u)\n", width, "n", width, "d(n)",  DSP_MAX);
+	printf("%*u:%*u:", width, 0, width, X_MAX);
+	for (y = 1; y <= DSP_MAX; y++) {
+		printf("*");
+	}
+	printf("...\n");
+	for (x = 1; x <= X_MAX; x++) {
+		printf("%*u:%*u:", width, x, width, divs[x].cnt);
+		pre = 0;
+		for (int cnt = divs[x].cnt; cnt > 0; cnt--) {
+			y = divs_pool[divs[x].pool_ofs+(cnt-1)];
+			if (y > DSP_MAX) continue;
+			if (pre) {
+				for (int i = 0; i < (y-pre-1); i++) {
+					printf(" ");
+				}
+			}
+			printf("*");
+			pre = y;
+		}
+		printf("\n");
+	}
+}
+
+#endif
 
